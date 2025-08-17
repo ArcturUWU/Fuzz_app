@@ -14,10 +14,10 @@ from sqlalchemy.orm import Session
 
 from . import fuzzing, models, schemas
 from .database import Base, engine, get_db
+
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Fuzzing Application")
-
 
 # Serve templates and (optional) static files
 templates = Jinja2Templates(directory="app/templates")

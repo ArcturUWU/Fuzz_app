@@ -1,0 +1,36 @@
+body {
+  margin: 0;
+  background-color: #1e1e1e;
+  color: #d4d4d4;
+  font-family: "Segoe UI", Tahoma, sans-serif;
+}
+a { color: #569cd6; }
+.topbar {
+  background: #333;
+  display: flex;
+  align-items: center;
+  padding: 4px 8px;
+}
+.logo {
+  font-weight: bold;
+  margin-right: 1rem;
+  color: #fff;
+  text-decoration: none;
+}
+.tabs button {
+  background: none;
+  border: none;
+  color: #ccc;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+.tabs button.active {
+  background: #1e1e1e;
+  color: #fff;
+}
+#content { padding: 12px; }
+.pane { display: none; padding: 10px; }
+.pane.active { display: block; }
+.editor-container { height: 400px; border: 1px solid #333; }
+.list-group-item { background: #252526; color: #d4d4d4; border-color: #3c3c3c; }
+.btn { border-radius: 0; }

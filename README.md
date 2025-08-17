@@ -2,12 +2,14 @@
 
 Minimal web application for organising fuzzing and security analysis
 experiments.  The backend is built with FastAPI and offers both a REST
-API and a Bootstrap‑based user interface.
+API and a VSCode‑inspired web interface featuring a Monaco code editor
+and tabbed workflow for each project.
 
 ## Features
 
-- Create and browse multiple projects via the web UI
-- Upload executables or C-like code snippets for each project
+- Create and browse multiple projects via the web interface
+- VSCode-style editor pane with EXE or source upload for each project
+
 - Naive decompilation, target variable selection and stub generation
   via an LLM powered by [vLLM](https://github.com/vllm-project/vllm)
 - Simple fuzzing and vulnerability analysis placeholders
@@ -45,6 +47,9 @@ model weights are not available the function falls back to returning a
 static stub so the rest of the application still works.  To enable real
 generation install vLLM and place the desired model weights on disk:
 
+```bash
+pip install vllm
+```
 
 ## Testing
 
