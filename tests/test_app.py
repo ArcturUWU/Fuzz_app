@@ -60,7 +60,6 @@ def test_deletion():
     projects = client.get("/projects").json()
     assert all(p["id"] != pid for p in projects)
 
-
 def test_get_and_update_file():
     resp = client.post("/projects", json={"name": "editproj"})
     pid = resp.json()["id"]
