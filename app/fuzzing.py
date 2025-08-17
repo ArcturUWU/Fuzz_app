@@ -1,43 +1,39 @@
-import httpx
+
+"""Utility helpers for the fuzzing pipeline."""
+
 from typing import List
 
+from .llm import generate_text
 
-# Placeholder decompilation function
 
 def decompile_exe(file_path: str) -> str:
     """Pretend to decompile an executable and return pseudo C code."""
-    return "// Decompiled code from {}".format(file_path)
+    return f"// Decompiled code from {file_path}"
 
-
-# Placeholder to choose target variables
 
 def select_target_variables(code: str) -> List[str]:
-    # Very naive: choose all variables starting with 'var'
-    words = set(word for word in code.split() if word.startswith("var"))
+    """Naively choose variables starting with ``var`` as fuzz targets."""
+    words = {word for word in code.split() if word.startswith("var")}
     return list(words)
 
 
-# Placeholder LLM stub generation
-
 def generate_stubs(code: str, targets: List[str]) -> str:
-    payload = {
-        "prompt": f"Create stubs for non-target variables in: {code}",
-        "max_tokens": 128,
-    }
+    """Use an LLM to create stubs for non-target variables."""
+    prompt = (
+        "Replace all variables except {targets} with stubs in the following "
+        f"code:\n{code}"
+    )
     try:
-        resp = httpx.post("http://localhost:8000/generate", json=payload, timeout=5)
-        return resp.json().get("text", "/* stubbed code */")
-    except Exception:
+        return generate_text(prompt)
+    except Exception:  # pragma: no cover - network/model failure
         return "/* stubbed code */"
 
 
-# Placeholder fuzzing process
-
 def fuzz_variable(code: str, variable: str) -> str:
+    """Placeholder fuzzing process for a single variable."""
     return f"Fuzzing {variable} in code..."
 
 
-# Placeholder security analysis
-
 def analyze_code(code: str) -> str:
-    return "No vulnerabilities found"
+    """Placeholder security analysis returning a constant string."""
+
