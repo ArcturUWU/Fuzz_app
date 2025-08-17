@@ -20,13 +20,11 @@
             <button type="submit" class="btn btn-sm btn-link text-danger p-0 delete-file">&times;</button>
           </form>
         </li>
-
         {% endfor %}
       </ul>
     </div>
     <div class="editor-area">
       <div id="current-file" class="current-file mb-1"></div>
-
       <form id="code-upload-form" method="post" action="/projects/{{ project.id }}/upload-code-web">
         <input type="text" name="filename" class="form-control mb-2" placeholder="Filename" required>
         <input type="hidden" name="content" id="code-content">
@@ -49,7 +47,6 @@
     </div>
     {% endfor %}
     <button class="btn btn-secondary mt-2 me-2" name="preview" value="true">Preview Stubs</button>
-
     <button class="btn btn-warning mt-2">Run Fuzzing</button>
   </form>
   {% if stubbed_code %}
@@ -57,7 +54,6 @@
     <div class="col-md-6">
       <h5>Original</h5>
       <pre class="code-block" id="fuzz-original">{{ original_code }}</pre>
-
     </div>
     <div class="col-md-6">
       <h5>Stubbed</h5>
@@ -89,7 +85,6 @@
   <div class="row">
     <div class="col-md-6">
       <pre class="code-block" id="analysis-original">{{ original_code }}</pre>
-
     </div>
     <div class="col-md-6">
       <form method="post" action="/projects/{{ project.id }}/analyze-web">
@@ -101,7 +96,6 @@
       {% endif %}
     </div>
   </div>
-
 </div>
 <div id="report-pane" class="pane">
   <a href="/projects/{{ project.id }}/report-web" class="btn btn-info">Generate Report</a>
@@ -111,8 +105,7 @@
   document.addEventListener('DOMContentLoaded', function () {
     const tabs = document.querySelectorAll('.tab-link');
     const panes = document.querySelectorAll('.pane');
-    const activePane = {{ active_pane|tojson }};
-
+    const activePane = JSON.parse('{{ active_pane|tojson }}');
     tabs.forEach((t) => {
       t.addEventListener('click', (e) => {
         e.preventDefault();
@@ -129,17 +122,15 @@
       p.classList.toggle('active', p.id === activePane);
     });
 
-
     require.config({
       paths: {
         vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.41.0/min/vs',
       },
     });
     require(['vs/editor/editor.main'], function () {
-      const data = {{ file_map|tojson }};
-
+      const data = JSON.parse('{{ file_map|tojson }}');
       window.editor = monaco.editor.create(document.getElementById('editor'), {
-        value: {{ original_code|tojson }},
+        value: JSON.parse('{{ original_code|tojson }}'),
         language: 'c',
         theme: 'vs-dark',
       });
@@ -148,8 +139,6 @@
       const currentFile = document.getElementById('current-file');
       const fuzzOriginal = document.getElementById('fuzz-original');
       const analysisOriginal = document.getElementById('analysis-original');
-
-
       function setActive(li) {
         fileItems.forEach((item) => item.classList.remove('active'));
         li.classList.add('active');
@@ -160,18 +149,16 @@
         currentFile.textContent = name;
         if (fuzzOriginal) fuzzOriginal.textContent = code;
         if (analysisOriginal) analysisOriginal.textContent = code;
-
       }
 
       if (fileItems.length) {
-        setActive(fileItems[0]);
+        setActive(fileItems[fileItems.length - 1]);
       }
       fileItems.forEach((li) => {
         li.addEventListener('click', (e) => {
           if (e.target.closest('form')) return;
           setActive(li);
         });
-
       });
     });
 

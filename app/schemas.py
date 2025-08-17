@@ -25,6 +25,7 @@ class Analysis(BaseModel):
     class Config:
         from_attributes = True
 
+
 class ProjectBase(BaseModel):
     name: str
 

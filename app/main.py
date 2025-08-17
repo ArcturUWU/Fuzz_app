@@ -60,6 +60,7 @@ def delete_file_api(project_id: int, file_id: int, db: Session = Depends(get_db)
     db.commit()
     return {"detail": "deleted"}
 
+
 @app.post("/projects/{project_id}/upload-exe", response_model=schemas.File)
 def upload_exe(project_id: int, file: UploadFile = File(...), db: Session = Depends(get_db)):
     # Save uploaded file temporarily
@@ -173,6 +174,7 @@ def delete_file_web(project_id: int, file_id: int, db: Session = Depends(get_db)
         db.delete(file)
         db.commit()
     return RedirectResponse(url=f"/projects/{project_id}", status_code=303)
+
 
 @app.get("/projects/{project_id}", response_class=HTMLResponse)
 def project_page(
