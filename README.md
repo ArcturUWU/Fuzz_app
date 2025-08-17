@@ -9,10 +9,12 @@ and tabbed workflow for each project.
 
 - Create and browse multiple projects via the web interface
 - VSCode-style editor pane with EXE or source upload for each project
-
 - Naive decompilation, target variable selection and stub generation
-  via an LLM powered by [vLLM](https://github.com/vllm-project/vllm)
-- Simple fuzzing and vulnerability analysis placeholders
+  via an optional vLLM-powered model
+- Simple fuzzing with per-variable statistics (errors, CPU time and
+  memory usage)
+- Vulnerability analysis placeholder
+
 - SQLite storage and project reports rendered in the browser
 
 ## Running
@@ -23,6 +25,14 @@ uvicorn app.main:app --reload
 ```
 
 Open <http://127.0.0.1:8000> to access the interface.
+
+An end-to-end mock pipeline is available in `examples/mock_pipeline.py`
+and exercises the REST API to create a project, upload code, fuzz,
+analyse and retrieve the final report:
+
+```bash
+python examples/mock_pipeline.py
+```
 
 ## Suggested stacks
 

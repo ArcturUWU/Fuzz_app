@@ -1,4 +1,6 @@
-from sqlalchemy import Column, Integer, String, Text, ForeignKey
+
+from sqlalchemy import Column, Integer, String, Text, ForeignKey, Float
+
 from sqlalchemy.orm import relationship
 
 from .database import Base
@@ -12,6 +14,8 @@ class Project(Base):
 
     files = relationship("File", back_populates="project")
     analyses = relationship("Analysis", back_populates="project")
+    fuzz_stats = relationship("FuzzStat", back_populates="project")
+
 
 
 class File(Base):
@@ -33,3 +37,17 @@ class Analysis(Base):
     project_id = Column(Integer, ForeignKey("projects.id"))
 
     project = relationship("Project", back_populates="analyses")
+class FuzzStat(Base):
+    __tablename__ = "fuzzstats"
+
+    id = Column(Integer, primary_key=True, index=True)
+    variable = Column(String)
+    iterations = Column(Integer)
+    errors = Column(Integer)
+    duration = Column(Float)
+    memory_kb = Column(Float)
+    cpu_time = Column(Float)
+    project_id = Column(Integer, ForeignKey("projects.id"))
+
+    project = relationship("Project", back_populates="fuzz_stats")
+

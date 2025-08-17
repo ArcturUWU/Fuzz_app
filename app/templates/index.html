@@ -6,7 +6,6 @@
     <button class="btn btn-primary" type="submit">Create</button>
   </form>
 </div>
-
 <ul class="list-group">
   {% for project in projects %}
   <li class="list-group-item"><a href="/projects/{{ project.id }}">{{ project.name }}</a></li>

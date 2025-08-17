@@ -1,4 +1,3 @@
-
 from fastapi import (
     FastAPI,
     Depends,
@@ -68,12 +67,12 @@ def fuzz(project_id: int, db: Session = Depends(get_db)):
     if not file:
         return {"detail": "No file uploaded"}
     targets = fuzzing.select_target_variables(file.content)
-    stubbed = fuzzing.generate_stubs(file.content, targets)
-    results = [fuzzing.fuzz_variable(stubbed, var) for var in targets]
-    analysis = models.Analysis(result="\n".join(results), project_id=project_id)
-    db.add(analysis)
+    stubbed, _ = fuzzing.generate_stubs(file.content, targets)
+    stats = fuzzing.fuzz_targets(stubbed, targets)
+    for s in stats:
+        db.add(models.FuzzStat(project_id=project_id, **s))
     db.commit()
-    return {"targets": targets, "results": results}
+    return {"targets": targets, "results": stats}
 
 
 @app.post("/projects/{project_id}/analyze", response_model=schemas.Analysis)
@@ -98,6 +97,17 @@ def report(project_id: int, db: Session = Depends(get_db)):
         "project": project.name,
         "files": [f.filename for f in project.files],
         "analyses": [a.result for a in project.analyses],
+        "fuzz_stats": [
+            {
+                "variable": s.variable,
+                "iterations": s.iterations,
+                "errors": s.errors,
+                "duration": s.duration,
+                "memory_kb": s.memory_kb,
+                "cpu_time": s.cpu_time,
+            }
+            for s in project.fuzz_stats
+        ],
     }
 
 
@@ -165,10 +175,10 @@ def fuzz_web(project_id: int, db: Session = Depends(get_db)):
     file = db.query(models.File).filter(models.File.project_id == project_id).first()
     if file:
         targets = fuzzing.select_target_variables(file.content)
-        stubbed = fuzzing.generate_stubs(file.content, targets)
-        results = [fuzzing.fuzz_variable(stubbed, var) for var in targets]
-        analysis = models.Analysis(result="\n".join(results), project_id=project_id)
-        db.add(analysis)
+        stubbed, _ = fuzzing.generate_stubs(file.content, targets)
+        stats = fuzzing.fuzz_targets(stubbed, targets)
+        for s in stats:
+            db.add(models.FuzzStat(project_id=project_id, **s))
         db.commit()
     msg = "Fuzzing complete" if file else "No file uploaded"
     return RedirectResponse(

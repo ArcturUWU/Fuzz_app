@@ -10,6 +10,14 @@
 {% block content %}
 {% if message %}<div class="alert alert-info">{{ message }}</div>{% endif %}
 <div id="editor-pane" class="pane active">
+  {% if project.files %}
+  <ul class="list-group mb-3">
+    {% for f in project.files %}
+    <li class="list-group-item">{{ f.filename }}</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+
   <form id="code-upload-form" method="post" action="/projects/{{ project.id }}/upload-code-web">
     <input type="text" name="filename" class="form-control mb-2" placeholder="Filename" required>
     <input type="hidden" name="content" id="code-content">
@@ -25,11 +33,37 @@
   <form method="post" action="/projects/{{ project.id }}/fuzz-web">
     <button class="btn btn-warning">Run Fuzzing</button>
   </form>
+  {% if project.fuzz_stats %}
+  <table class="table table-sm mt-3">
+    <thead>
+      <tr><th>Variable</th><th>Iterations</th><th>Errors</th><th>CPU&nbsp;s</th><th>Mem&nbsp;kB</th><th>Duration&nbsp;s</th></tr>
+    </thead>
+    <tbody>
+    {% for s in project.fuzz_stats %}
+      <tr>
+        <td>{{ s.variable }}</td>
+        <td>{{ s.iterations }}</td>
+        <td>{{ s.errors }}</td>
+        <td>{{ '%.2f'|format(s.cpu_time) }}</td>
+        <td>{{ '%.1f'|format(s.memory_kb) }}</td>
+        <td>{{ '%.2f'|format(s.duration) }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
 </div>
 <div id="analysis-pane" class="pane">
   <form method="post" action="/projects/{{ project.id }}/analyze-web">
     <button class="btn btn-danger">Analyze</button>
   </form>
+  {% if project.analyses %}
+  <ul class="list-group mt-3">
+    {% for a in project.analyses %}
+    <li class="list-group-item"><pre class="mb-0">{{ a.result }}</pre></li>
+    {% endfor %}
+  </ul>
+  {% endif %}
 </div>
 <div id="report-pane" class="pane">
   <a href="/projects/{{ project.id }}/report-web" class="btn btn-info">Generate Report</a>
@@ -58,5 +92,4 @@
     document.getElementById('code-content').value = window.editor.getValue();
   });
 </script>
-
 {% endblock %}

@@ -6,5 +6,7 @@ httpx
 pytest
 python-multipart
 jinja2
+# system metrics for fuzz stats
+psutil
 # Optional for local LLM stub generation
 # vllm
