@@ -98,34 +98,37 @@
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.41.0/min/vs/loader.min.js"></script>
 <script>
-  const tabs = document.querySelectorAll('.tab-link');
-  const panes = document.querySelectorAll('.pane');
-  tabs.forEach(t => {
-    t.addEventListener('click', () => {
-      tabs.forEach(b => b.classList.remove('active'));
-      panes.forEach(p => p.classList.remove('active'));
-      t.classList.add('active');
-      document.getElementById(t.dataset.pane).classList.add('active');
-    });
-  });
-  require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.41.0/min/vs' }});
-  require(['vs/editor/editor.main'], function() {
-    const data = {{ {f.filename: f.content for f in project.files}|tojson }};
-    window.editor = monaco.editor.create(document.getElementById('editor'), {
-      value: {{ original_code|tojson }},
+  require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.41.0/min/vs' }});
+  require(['vs/editor/editor.main'], function () {
+    const data = JSON.parse(document.getElementById('files-data').textContent);
+    const initialCode = JSON.parse(document.getElementById('initial-code').textContent);
+
+    const editorEl = document.getElementById('editor');
+    window.editor = monaco.editor.create(editorEl, {
+      value: typeof initialCode === 'string' ? initialCode : '',
       language: 'c',
-      theme: 'vs-dark'
+      theme: 'vs-dark',
+      automaticLayout: true
     });
+
     document.querySelectorAll('.file-item').forEach(li => {
       li.addEventListener('click', () => {
         const name = li.dataset.name;
-        window.editor.setValue(data[name]);
-        document.querySelector('input[name="filename"]').value = name;
+        if (name in data) {
+          window.editor.setValue(data[name] ?? '');
+          const fn = document.querySelector('input[name="filename"]');
+          if (fn) fn.value = name;
+        }
       });
     });
   });
-  document.getElementById('code-upload-form').addEventListener('submit', function(){
-    document.getElementById('code-content').value = window.editor.getValue();
-  });
+
+  const form = document.getElementById('code-upload-form');
+  if (form) {
+    form.addEventListener('submit', function () {
+      const hidden = document.getElementById('code-content');
+      if (hidden && window.editor) hidden.value = window.editor.getValue();
+    });
+  }
 </script>
 {% endblock %}
