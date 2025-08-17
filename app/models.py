@@ -1,4 +1,6 @@
+
 from sqlalchemy import Column, Integer, String, Text, ForeignKey, Float
+
 from sqlalchemy.orm import relationship
 
 from .database import Base
@@ -49,3 +51,4 @@ class FuzzStat(Base):
     project_id = Column(Integer, ForeignKey("projects.id"))
 
     project = relationship("Project", back_populates="fuzz_stats")
+

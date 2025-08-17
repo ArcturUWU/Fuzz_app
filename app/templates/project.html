@@ -5,6 +5,7 @@
   <button type="button" class="tab-link" data-pane="fuzz-pane">Fuzz</button>
   <button type="button" class="tab-link" data-pane="analysis-pane">Analysis</button>
   <button type="button" class="tab-link" data-pane="report-pane">Report</button>
+
 </div>
 {% endblock %}
 {% block content %}
@@ -20,6 +21,7 @@
     </div>
     <div class="editor-area">
       <div id="current-file" class="current-file mb-1"></div>
+
       <form id="code-upload-form" method="post" action="/projects/{{ project.id }}/upload-code-web">
         <input type="text" name="filename" class="form-control mb-2" placeholder="Filename" required>
         <input type="hidden" name="content" id="code-content">
@@ -56,12 +58,14 @@
   </div>
   {% endif %}
   {% if fuzz_stats %}
+
   <table class="table table-sm mt-3">
     <thead>
       <tr><th>Variable</th><th>Iterations</th><th>Errors</th><th>CPU&nbsp;s</th><th>Mem&nbsp;kB</th><th>Duration&nbsp;s</th></tr>
     </thead>
     <tbody>
     {% for s in fuzz_stats %}
+
       <tr>
         <td>{{ s.variable }}</td>
         <td>{{ s.iterations }}</td>
@@ -90,6 +94,7 @@
       {% endif %}
     </div>
   </div>
+
 </div>
 <div id="report-pane" class="pane">
   <a href="/projects/{{ project.id }}/report-web" class="btn btn-info">Generate Report</a>

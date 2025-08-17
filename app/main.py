@@ -81,6 +81,7 @@ def analyze(project_id: int, notes: str = "", db: Session = Depends(get_db)):
     if not file:
         return schemas.Analysis(id=0, result="No file")
     result = fuzzing.analyze_code(file.content, notes)
+
     analysis = models.Analysis(result=result, project_id=project_id)
     db.add(analysis)
     db.commit()
@@ -139,6 +140,7 @@ def project_page(
     stats: list[dict] | None = None,
     analysis_result: str | None = None,
     db: Session = Depends(get_db),
+
 ):
     project = db.query(models.Project).get(project_id)
     if not project:
@@ -163,6 +165,7 @@ def project_page(
             "fuzz_stats": stats or project.fuzz_stats,
             "analysis_result": analysis_result,
         },
+
     )
 
 
@@ -228,6 +231,7 @@ def fuzz_web(
             "stubbed_code": stubbed,
             "fuzz_stats": stats,
         },
+
     )
 
 
@@ -262,6 +266,7 @@ def analyze_web(
             "fuzz_stats": project.fuzz_stats,
             "analysis_result": result,
         },
+
     )
 
 
