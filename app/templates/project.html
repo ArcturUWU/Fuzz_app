@@ -93,7 +93,6 @@
       <form method="post" action="/projects/{{ project.id }}/analyze-web">
         <textarea name="notes" class="form-control mb-2" rows="10" placeholder="Comments or focus areas"></textarea>
         <button class="btn btn-danger">Analyze</button>
-
       </form>
       {% if analysis_result %}
       <div class="analysis-result mt-3"><pre>{{ analysis_result }}</pre></div>

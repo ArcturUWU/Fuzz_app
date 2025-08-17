@@ -6,7 +6,6 @@ from fastapi import (
     Form,
     Request,
     HTTPException,
-
 )
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
@@ -91,7 +90,6 @@ def update_file_api(
     db.commit()
     db.refresh(file)
     return file
-
 @app.post("/projects/{project_id}/upload-exe", response_model=schemas.File)
 def upload_exe(project_id: int, file: UploadFile = File(...), db: Session = Depends(get_db)):
     # Save uploaded file temporarily
@@ -217,7 +215,6 @@ def project_page(
     analysis_result: str | None = None,
     active: str = "editor-pane",
     db: Session = Depends(get_db),
-
 ):
     project = db.query(models.Project).get(project_id)
     if not project:
@@ -228,8 +225,6 @@ def project_page(
     all_targets = (
         fuzzing.select_target_variables(original_code) if file else []
     )
-
-
     return templates.TemplateResponse(
         "project.html",
         {
@@ -252,13 +247,14 @@ def save_file_web(
     project_id: int,
     filename: str = Form(...),
     content: str = Form(...),
-    file_id: int | None = Form(None),
+    file_id: str | None = Form(None),
     db: Session = Depends(get_db),
 ):
-    if file_id:
+    fid = int(file_id) if file_id else None
+    if fid is not None:
         db_file = (
             db.query(models.File)
-            .filter(models.File.project_id == project_id, models.File.id == file_id)
+            .filter(models.File.project_id == project_id, models.File.id == fid)
             .first()
         )
         if db_file:
@@ -269,7 +265,6 @@ def save_file_web(
             filename=filename, content=content, project_id=project_id
         )
         db.add(db_file)
-
     db.commit()
     return RedirectResponse(url=f"/projects/{project_id}", status_code=303)
 
@@ -323,7 +318,6 @@ def fuzz_web(
             "request": request,
             "project": project,
             "message": message,
-
             "all_targets": all_targets,
             "targets": chosen,
             "original_code": file.content,
@@ -331,7 +325,6 @@ def fuzz_web(
             "fuzz_stats": stats,
             "active_pane": "fuzz-pane",
         },
-
     )
 
 

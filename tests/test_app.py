@@ -78,3 +78,18 @@ def test_get_and_update_file():
     fetched2 = client.get(f"/projects/{pid}/files/{fid}").json()
     assert fetched2["filename"] == "b.c"
     assert "int y=1;" in fetched2["content"]
+
+
+def test_save_file_blank_id():
+    resp = client.post("/projects", json={"name": "blankid"})
+    pid = resp.json()["id"]
+    # simulate form submission with empty file_id
+    save = client.post(
+        f"/projects/{pid}/save-file",
+        data={"filename": "new.c", "content": "int z=2;", "file_id": ""},
+    )
+    assert save.status_code == 200
+    projects = client.get("/projects").json()
+    proj = next(p for p in projects if p["id"] == pid)
+    assert any(f["filename"] == "new.c" for f in proj["files"])
+

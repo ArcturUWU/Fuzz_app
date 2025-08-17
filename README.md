@@ -10,7 +10,6 @@ and tabbed workflow for each project.
 - Create and browse multiple projects via the web interface
 - VSCode-style workspace with left-hand file navigation and Monaco editor
   for quick switching between source files, in-place editing and file renaming
-
 - Delete projects or individual source files from the UI or REST API
 - Naive decompilation, user-selectable target variables and automatic
   stub generation via an optional vLLM-powered model
