@@ -41,3 +41,21 @@ def test_full_pipeline():
 
     report = client.get(f"/projects/{project_id}/report").json()
     assert report["fuzz_stats"]
+
+
+def test_deletion():
+    resp = client.post("/projects", json={"name": "todelete"})
+    pid = resp.json()["id"]
+    file_resp = client.post(
+        f"/projects/{pid}/upload-code",
+        json={"filename": "a.c", "content": "int x=0;"},
+    ).json()
+    fid = file_resp["id"]
+    del_file = client.delete(f"/projects/{pid}/files/{fid}")
+    assert del_file.status_code == 200
+    report = client.get(f"/projects/{pid}/report").json()
+    assert report["files"] == []
+    del_proj = client.delete(f"/projects/{pid}")
+    assert del_proj.status_code == 200
+    projects = client.get("/projects").json()
+    assert all(p["id"] != pid for p in projects)

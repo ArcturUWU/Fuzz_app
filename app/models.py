@@ -12,9 +12,16 @@ class Project(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, index=True)
 
-    files = relationship("File", back_populates="project")
-    analyses = relationship("Analysis", back_populates="project")
-    fuzz_stats = relationship("FuzzStat", back_populates="project")
+    files = relationship(
+        "File", back_populates="project", cascade="all, delete-orphan"
+    )
+    analyses = relationship(
+        "Analysis", back_populates="project", cascade="all, delete-orphan"
+    )
+    fuzz_stats = relationship(
+        "FuzzStat", back_populates="project", cascade="all, delete-orphan"
+    )
+
 
 
 class File(Base):
@@ -51,4 +58,3 @@ class FuzzStat(Base):
     project_id = Column(Integer, ForeignKey("projects.id"))
 
     project = relationship("Project", back_populates="fuzz_stats")
-

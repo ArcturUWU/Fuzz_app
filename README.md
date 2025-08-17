@@ -10,8 +10,10 @@ and tabbed workflow for each project.
 - Create and browse multiple projects via the web interface
 - VSCode-style workspace with left-hand file navigation and Monaco editor
   for quick switching between source files
+- Delete projects or individual source files from the UI or REST API
 - Naive decompilation, user-selectable target variables and automatic
   stub generation via an optional vLLM-powered model
+- Preview stubbed code before executing fuzzing runs
 - In-browser fuzzing results that display CPU and memory utilisation and
   show code before/after stubbing
 - LLM-backed analysis pane with room for user notes and feedback

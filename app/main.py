@@ -37,6 +37,29 @@ def list_projects(db: Session = Depends(get_db)):
     return db.query(models.Project).all()
 
 
+@app.delete("/projects/{project_id}")
+def delete_project_api(project_id: int, db: Session = Depends(get_db)):
+    project = db.query(models.Project).get(project_id)
+    if not project:
+        return {"detail": "Project not found"}
+    db.delete(project)
+    db.commit()
+    return {"detail": "deleted"}
+
+
+@app.delete("/projects/{project_id}/files/{file_id}")
+def delete_file_api(project_id: int, file_id: int, db: Session = Depends(get_db)):
+    file = (
+        db.query(models.File)
+        .filter(models.File.project_id == project_id, models.File.id == file_id)
+        .first()
+    )
+    if not file:
+        return {"detail": "File not found"}
+    db.delete(file)
+    db.commit()
+    return {"detail": "deleted"}
+
 @app.post("/projects/{project_id}/upload-exe", response_model=schemas.File)
 def upload_exe(project_id: int, file: UploadFile = File(...), db: Session = Depends(get_db)):
     # Save uploaded file temporarily
@@ -81,7 +104,6 @@ def analyze(project_id: int, notes: str = "", db: Session = Depends(get_db)):
     if not file:
         return schemas.Analysis(id=0, result="No file")
     result = fuzzing.analyze_code(file.content, notes)
-
     analysis = models.Analysis(result=result, project_id=project_id)
     db.add(analysis)
     db.commit()
@@ -131,6 +153,27 @@ def create_project_web(name: str = Form(...), db: Session = Depends(get_db)):
     return RedirectResponse(url=f"/projects/{project.id}", status_code=303)
 
 
+@app.post("/projects/{project_id}/delete")
+def delete_project_web(project_id: int, db: Session = Depends(get_db)):
+    project = db.query(models.Project).get(project_id)
+    if project:
+        db.delete(project)
+        db.commit()
+    return RedirectResponse(url="/", status_code=303)
+
+
+@app.post("/projects/{project_id}/files/{file_id}/delete")
+def delete_file_web(project_id: int, file_id: int, db: Session = Depends(get_db)):
+    file = (
+        db.query(models.File)
+        .filter(models.File.project_id == project_id, models.File.id == file_id)
+        .first()
+    )
+    if file:
+        db.delete(file)
+        db.commit()
+    return RedirectResponse(url=f"/projects/{project_id}", status_code=303)
+
 @app.get("/projects/{project_id}", response_class=HTMLResponse)
 def project_page(
     request: Request,
@@ -139,6 +182,7 @@ def project_page(
     stubbed: str | None = None,
     stats: list[dict] | None = None,
     analysis_result: str | None = None,
+    active: str = "editor-pane",
     db: Session = Depends(get_db),
 
 ):
@@ -151,6 +195,8 @@ def project_page(
     all_targets = (
         fuzzing.select_target_variables(original_code) if file else []
     )
+    file_map = {f.filename: f.content for f in project.files}
+
 
     return templates.TemplateResponse(
         "project.html",
@@ -164,8 +210,9 @@ def project_page(
             "stubbed_code": stubbed,
             "fuzz_stats": stats or project.fuzz_stats,
             "analysis_result": analysis_result,
+            "file_map": file_map,
+            "active_pane": active,
         },
-
     )
 
 
@@ -202,6 +249,7 @@ def fuzz_web(
     request: Request,
     project_id: int,
     targets: list[str] = Form([]),
+    preview: str | None = Form(None),
     db: Session = Depends(get_db),
 ):
     project = db.query(models.Project).get(project_id)
@@ -214,22 +262,31 @@ def fuzz_web(
     all_targets = fuzzing.select_target_variables(file.content)
     chosen = targets or all_targets
     stubbed, _ = fuzzing.generate_stubs(file.content, chosen)
-    stats = fuzzing.fuzz_targets(stubbed, chosen)
-    for s in stats:
-        db.add(models.FuzzStat(project_id=project_id, **s))
-    db.commit()
+    stats = []
+    if not preview:
+        stats = fuzzing.fuzz_targets(stubbed, chosen)
+        for s in stats:
+            db.add(models.FuzzStat(project_id=project_id, **s))
+        db.commit()
+        message = "Fuzzing complete"
+    else:
+        message = "Stubs generated"
+
 
     return templates.TemplateResponse(
         "project.html",
         {
             "request": request,
             "project": project,
-            "message": "Fuzzing complete",
+            "message": message,
+
             "all_targets": all_targets,
             "targets": chosen,
             "original_code": file.content,
             "stubbed_code": stubbed,
             "fuzz_stats": stats,
+            "active_pane": "fuzz-pane",
+            "file_map": {f.filename: f.content for f in project.files},
         },
 
     )
@@ -265,6 +322,8 @@ def analyze_web(
             "original_code": file.content,
             "fuzz_stats": project.fuzz_stats,
             "analysis_result": result,
+            "active_pane": "analysis-pane",
+            "file_map": {f.filename: f.content for f in project.files},
         },
 
     )

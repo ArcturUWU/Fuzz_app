@@ -5,7 +5,6 @@
   <button type="button" class="tab-link" data-pane="fuzz-pane">Fuzz</button>
   <button type="button" class="tab-link" data-pane="analysis-pane">Analysis</button>
   <button type="button" class="tab-link" data-pane="report-pane">Report</button>
-
 </div>
 {% endblock %}
 {% block content %}
@@ -15,7 +14,13 @@
     <div class="file-nav">
       <ul class="list-group">
         {% for f in project.files %}
-        <li class="list-group-item file-item" data-name="{{ f.filename }}">{{ f.filename }}</li>
+        <li class="list-group-item d-flex justify-content-between align-items-center file-item" data-name="{{ f.filename }}" data-id="{{ f.id }}">
+          <span class="file-name flex-grow-1">{{ f.filename }}</span>
+          <form method="post" action="/projects/{{ project.id }}/files/{{ f.id }}/delete" class="ms-2">
+            <button type="submit" class="btn btn-sm btn-link text-danger p-0 delete-file">&times;</button>
+          </form>
+        </li>
+
         {% endfor %}
       </ul>
     </div>
@@ -43,13 +48,16 @@
       <label class="form-check-label">{{ v }}</label>
     </div>
     {% endfor %}
+    <button class="btn btn-secondary mt-2 me-2" name="preview" value="true">Preview Stubs</button>
+
     <button class="btn btn-warning mt-2">Run Fuzzing</button>
   </form>
   {% if stubbed_code %}
   <div class="row mb-3">
     <div class="col-md-6">
       <h5>Original</h5>
-      <pre class="code-block">{{ original_code }}</pre>
+      <pre class="code-block" id="fuzz-original">{{ original_code }}</pre>
+
     </div>
     <div class="col-md-6">
       <h5>Stubbed</h5>
@@ -58,14 +66,12 @@
   </div>
   {% endif %}
   {% if fuzz_stats %}
-
   <table class="table table-sm mt-3">
     <thead>
       <tr><th>Variable</th><th>Iterations</th><th>Errors</th><th>CPU&nbsp;s</th><th>Mem&nbsp;kB</th><th>Duration&nbsp;s</th></tr>
     </thead>
     <tbody>
     {% for s in fuzz_stats %}
-
       <tr>
         <td>{{ s.variable }}</td>
         <td>{{ s.iterations }}</td>
@@ -82,7 +88,8 @@
 <div id="analysis-pane" class="pane">
   <div class="row">
     <div class="col-md-6">
-      <pre class="code-block">{{ original_code }}</pre>
+      <pre class="code-block" id="analysis-original">{{ original_code }}</pre>
+
     </div>
     <div class="col-md-6">
       <form method="post" action="/projects/{{ project.id }}/analyze-web">
@@ -104,6 +111,8 @@
   document.addEventListener('DOMContentLoaded', function () {
     const tabs = document.querySelectorAll('.tab-link');
     const panes = document.querySelectorAll('.pane');
+    const activePane = {{ active_pane|tojson }};
+
     tabs.forEach((t) => {
       t.addEventListener('click', (e) => {
         e.preventDefault();
@@ -113,6 +122,13 @@
         document.getElementById(t.dataset.pane).classList.add('active');
       });
     });
+    tabs.forEach((t) => {
+      t.classList.toggle('active', t.dataset.pane === activePane);
+    });
+    panes.forEach((p) => {
+      p.classList.toggle('active', p.id === activePane);
+    });
+
 
     require.config({
       paths: {
@@ -120,7 +136,8 @@
       },
     });
     require(['vs/editor/editor.main'], function () {
-      const data = {{ {f.filename: f.content for f in project.files}|tojson }};
+      const data = {{ file_map|tojson }};
+
       window.editor = monaco.editor.create(document.getElementById('editor'), {
         value: {{ original_code|tojson }},
         language: 'c',
@@ -129,21 +146,32 @@
       const fileItems = document.querySelectorAll('.file-item');
       const filenameInput = document.querySelector('input[name="filename"]');
       const currentFile = document.getElementById('current-file');
+      const fuzzOriginal = document.getElementById('fuzz-original');
+      const analysisOriginal = document.getElementById('analysis-original');
+
 
       function setActive(li) {
         fileItems.forEach((item) => item.classList.remove('active'));
         li.classList.add('active');
         const name = li.dataset.name;
-        window.editor.setValue(data[name]);
+        const code = data[name];
+        window.editor.setValue(code);
         filenameInput.value = name;
         currentFile.textContent = name;
+        if (fuzzOriginal) fuzzOriginal.textContent = code;
+        if (analysisOriginal) analysisOriginal.textContent = code;
+
       }
 
       if (fileItems.length) {
         setActive(fileItems[0]);
       }
       fileItems.forEach((li) => {
-        li.addEventListener('click', () => setActive(li));
+        li.addEventListener('click', (e) => {
+          if (e.target.closest('form')) return;
+          setActive(li);
+        });
+
       });
     });
 

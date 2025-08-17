@@ -37,6 +37,10 @@ a { color: #569cd6; }
 .pane.active { display: block; }
 .editor-container { height: 500px; border: 1px solid #333; }
 .list-group-item { background: #252526; color: #d4d4d4; border-color: #3c3c3c; cursor: pointer; }
+.file-item.active { background: #094771; color: #fff; }
+.file-item .delete-file { visibility: hidden; }
+.file-item:hover .delete-file { visibility: visible; }
+.current-file { font-weight: bold; margin-bottom: 4px; }
 
 .btn { border-radius: 0; }
 
