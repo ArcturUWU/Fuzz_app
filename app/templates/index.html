@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<form method="post" action="/projects/create" class="mb-3">
+  <div class="input-group">
+    <input type="text" name="name" class="form-control" placeholder="New project name" required>
+    <button class="btn btn-primary" type="submit">Create</button>
+  </div>
+</form>
+<ul class="list-group">
+  {% for project in projects %}
+  <li class="list-group-item"><a href="/projects/{{ project.id }}">{{ project.name }}</a></li>
+  {% else %}
+  <li class="list-group-item">No projects yet</li>
+  {% endfor %}
+</ul>
+{% endblock %}
