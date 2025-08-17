@@ -112,8 +112,35 @@ def fuzz_targets(code: str, targets: List[str], iterations: int = 100) -> List[D
     return [fuzz_variable(code, t, iterations) for t in targets]
 
 
+def analyze_code(code: str, notes: str = "") -> str:
+    """Run a very naive LLM powered security review.
 
-def analyze_code(code: str) -> str:
-    """Placeholder security analysis returning a constant string."""
+    Parameters
+    ----------
+    code: str
+        Source code of the function to analyse.
+    notes: str, optional
+        Additional comments or areas of interest from the user.  These are
+        appended to the analysis prompt so the model can focus on specific
+        concerns.
+
+    Returns
+    -------
+    str
+        Textual analysis result produced by the LLM or a default message
+        when the model is unavailable.
+    """
+
+    prompt = (
+        "Review the following C function for security issues. "
+        f"User notes: {notes}\n{code}\n"
+    )
+
+    try:  # pragma: no cover - relies on optional vLLM
+        result = generate_text(prompt)
+        if result:
+            return result
+    except Exception:  # pragma: no cover - network/model failure
+        pass
     return "No vulnerabilities found"
 

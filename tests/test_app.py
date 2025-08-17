@@ -10,7 +10,6 @@ if os.path.exists(DB_PATH):
 
 sys.path.append(BASE_DIR)
 
-
 from app.main import app
 
 client = TestClient(app)
@@ -42,4 +41,3 @@ def test_full_pipeline():
 
     report = client.get(f"/projects/{project_id}/report").json()
     assert report["fuzz_stats"]
-

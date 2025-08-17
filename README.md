@@ -8,14 +8,16 @@ and tabbed workflow for each project.
 ## Features
 
 - Create and browse multiple projects via the web interface
-- VSCode-style editor pane with EXE or source upload for each project
-- Naive decompilation, target variable selection and stub generation
-  via an optional vLLM-powered model
-- Simple fuzzing with per-variable statistics (errors, CPU time and
-  memory usage)
-- Vulnerability analysis placeholder
+- VSCode-style workspace with left-hand file navigation and Monaco editor
+  for quick switching between source files
+- Naive decompilation, user-selectable target variables and automatic
+  stub generation via an optional vLLM-powered model
+- In-browser fuzzing results that display CPU and memory utilisation and
+  show code before/after stubbing
+- LLM-backed analysis pane with room for user notes and feedback
+- SQLite storage and project reports rendered in the browser with a PDF
+  export option
 
-- SQLite storage and project reports rendered in the browser
 
 ## Running
 

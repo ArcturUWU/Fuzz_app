@@ -76,11 +76,12 @@ def fuzz(project_id: int, db: Session = Depends(get_db)):
 
 
 @app.post("/projects/{project_id}/analyze", response_model=schemas.Analysis)
-def analyze(project_id: int, db: Session = Depends(get_db)):
+def analyze(project_id: int, notes: str = "", db: Session = Depends(get_db)):
     file = db.query(models.File).filter(models.File.project_id == project_id).first()
     if not file:
         return schemas.Analysis(id=0, result="No file")
-    result = fuzzing.analyze_code(file.content)
+    result = fuzzing.analyze_code(file.content, notes)
+
     analysis = models.Analysis(result=result, project_id=project_id)
     db.add(analysis)
     db.commit()
@@ -132,13 +133,39 @@ def create_project_web(name: str = Form(...), db: Session = Depends(get_db)):
 
 @app.get("/projects/{project_id}", response_class=HTMLResponse)
 def project_page(
-    request: Request, project_id: int, message: str | None = None, db: Session = Depends(get_db)
+    request: Request,
+    project_id: int,
+    message: str | None = None,
+    stubbed: str | None = None,
+    stats: list[dict] | None = None,
+    analysis_result: str | None = None,
+    db: Session = Depends(get_db),
+
 ):
     project = db.query(models.Project).get(project_id)
     if not project:
         return RedirectResponse("/", status_code=303)
+
+    file = project.files[0] if project.files else None
+    original_code = file.content if file else ""
+    all_targets = (
+        fuzzing.select_target_variables(original_code) if file else []
+    )
+
     return templates.TemplateResponse(
-        "project.html", {"request": request, "project": project, "message": message}
+        "project.html",
+        {
+            "request": request,
+            "project": project,
+            "message": message,
+            "all_targets": all_targets,
+            "targets": all_targets,
+            "original_code": original_code,
+            "stubbed_code": stubbed,
+            "fuzz_stats": stats or project.fuzz_stats,
+            "analysis_result": analysis_result,
+        },
+
     )
 
 
@@ -171,34 +198,75 @@ def upload_exe_web(
 
 
 @app.post("/projects/{project_id}/fuzz-web")
-def fuzz_web(project_id: int, db: Session = Depends(get_db)):
-    file = db.query(models.File).filter(models.File.project_id == project_id).first()
-    if file:
-        targets = fuzzing.select_target_variables(file.content)
-        stubbed, _ = fuzzing.generate_stubs(file.content, targets)
-        stats = fuzzing.fuzz_targets(stubbed, targets)
-        for s in stats:
-            db.add(models.FuzzStat(project_id=project_id, **s))
-        db.commit()
-    msg = "Fuzzing complete" if file else "No file uploaded"
-    return RedirectResponse(
-        url=f"/projects/{project_id}?message={msg}", status_code=303
+def fuzz_web(
+    request: Request,
+    project_id: int,
+    targets: list[str] = Form([]),
+    db: Session = Depends(get_db),
+):
+    project = db.query(models.Project).get(project_id)
+    file = (
+        db.query(models.File).filter(models.File.project_id == project_id).first()
+    )
+    if not project or not file:
+        return RedirectResponse("/", status_code=303)
+
+    all_targets = fuzzing.select_target_variables(file.content)
+    chosen = targets or all_targets
+    stubbed, _ = fuzzing.generate_stubs(file.content, chosen)
+    stats = fuzzing.fuzz_targets(stubbed, chosen)
+    for s in stats:
+        db.add(models.FuzzStat(project_id=project_id, **s))
+    db.commit()
+
+    return templates.TemplateResponse(
+        "project.html",
+        {
+            "request": request,
+            "project": project,
+            "message": "Fuzzing complete",
+            "all_targets": all_targets,
+            "targets": chosen,
+            "original_code": file.content,
+            "stubbed_code": stubbed,
+            "fuzz_stats": stats,
+        },
+
     )
 
 
 @app.post("/projects/{project_id}/analyze-web")
-def analyze_web(project_id: int, db: Session = Depends(get_db)):
-    file = db.query(models.File).filter(models.File.project_id == project_id).first()
-    if file:
-        result = fuzzing.analyze_code(file.content)
-        analysis = models.Analysis(result=result, project_id=project_id)
-        db.add(analysis)
-        db.commit()
-        msg = "Analysis complete"
-    else:
-        msg = "No file uploaded"
-    return RedirectResponse(
-        url=f"/projects/{project_id}?message={msg}", status_code=303
+def analyze_web(
+    request: Request,
+    project_id: int,
+    notes: str = Form(""),
+    db: Session = Depends(get_db),
+):
+    project = db.query(models.Project).get(project_id)
+    file = (
+        db.query(models.File).filter(models.File.project_id == project_id).first()
+    )
+    if not project or not file:
+        return RedirectResponse("/", status_code=303)
+
+    result = fuzzing.analyze_code(file.content, notes)
+    analysis = models.Analysis(result=result, project_id=project_id)
+    db.add(analysis)
+    db.commit()
+
+    return templates.TemplateResponse(
+        "project.html",
+        {
+            "request": request,
+            "project": project,
+            "message": "Analysis complete",
+            "all_targets": fuzzing.select_target_variables(file.content),
+            "targets": fuzzing.select_target_variables(file.content),
+            "original_code": file.content,
+            "fuzz_stats": project.fuzz_stats,
+            "analysis_result": result,
+        },
+
     )
 
 
@@ -210,3 +278,48 @@ def report_web(request: Request, project_id: int, db: Session = Depends(get_db))
     return templates.TemplateResponse(
         "report.html", {"request": request, "project": project}
     )
+
+
+@app.get("/projects/{project_id}/report-pdf")
+def report_pdf(project_id: int, db: Session = Depends(get_db)):
+    project = db.query(models.Project).get(project_id)
+    if not project:
+        return RedirectResponse("/", status_code=303)
+
+    from io import BytesIO
+    from reportlab.pdfgen import canvas
+
+    buffer = BytesIO()
+    c = canvas.Canvas(buffer)
+    c.setFont("Helvetica", 14)
+    c.drawString(40, 800, f"Project: {project.name}")
+    y = 760
+    for f in project.files:
+        c.drawString(40, y, f"File: {f.filename}")
+        y -= 20
+        if y < 40:
+            c.showPage()
+            y = 800
+    for stat in project.fuzz_stats:
+        if y < 80:
+            c.showPage()
+            y = 800
+        c.drawString(
+            40,
+            y,
+            f"Fuzz {stat.variable}: iter {stat.iterations} err {stat.errors} cpu {stat.cpu_time:.2f}s mem {stat.memory_kb:.1f}kB",
+        )
+        y -= 20
+    c.showPage()
+    c.save()
+    buffer.seek(0)
+    from fastapi.responses import StreamingResponse
+
+    return StreamingResponse(
+        buffer,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f"attachment; filename=report_{project_id}.pdf"
+        },
+    )
+

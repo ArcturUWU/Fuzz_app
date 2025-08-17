@@ -17,7 +17,6 @@ class Project(Base):
     fuzz_stats = relationship("FuzzStat", back_populates="project")
 
 
-
 class File(Base):
     __tablename__ = "files"
 
@@ -37,6 +36,7 @@ class Analysis(Base):
     project_id = Column(Integer, ForeignKey("projects.id"))
 
     project = relationship("Project", back_populates="analyses")
+
 class FuzzStat(Base):
     __tablename__ = "fuzzstats"
 

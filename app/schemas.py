@@ -18,15 +18,12 @@ class File(FileBase):
         from_attributes = True
 
 
-
 class Analysis(BaseModel):
     id: int
     result: str
 
     class Config:
         from_attributes = True
-
-
 
 class ProjectBase(BaseModel):
     name: str

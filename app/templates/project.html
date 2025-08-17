@@ -10,36 +10,59 @@
 {% block content %}
 {% if message %}<div class="alert alert-info">{{ message }}</div>{% endif %}
 <div id="editor-pane" class="pane active">
-  {% if project.files %}
-  <ul class="list-group mb-3">
-    {% for f in project.files %}
-    <li class="list-group-item">{{ f.filename }}</li>
-    {% endfor %}
-  </ul>
-  {% endif %}
-
-  <form id="code-upload-form" method="post" action="/projects/{{ project.id }}/upload-code-web">
-    <input type="text" name="filename" class="form-control mb-2" placeholder="Filename" required>
-    <input type="hidden" name="content" id="code-content">
-    <div id="editor" class="editor-container mb-2"></div>
-    <button class="btn btn-secondary">Save Code</button>
-  </form>
-  <form method="post" action="/projects/{{ project.id }}/upload-exe-web" enctype="multipart/form-data" class="mt-3">
-    <input type="file" name="file" class="form-control mb-2" required>
-    <button class="btn btn-secondary">Upload EXE</button>
-  </form>
+  <div class="workspace">
+    <div class="file-nav">
+      <ul class="list-group">
+        {% for f in project.files %}
+        <li class="list-group-item file-item" data-name="{{ f.filename }}">{{ f.filename }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="editor-area">
+      <form id="code-upload-form" method="post" action="/projects/{{ project.id }}/upload-code-web">
+        <input type="text" name="filename" class="form-control mb-2" placeholder="Filename" required>
+        <input type="hidden" name="content" id="code-content">
+        <div id="editor" class="editor-container mb-2"></div>
+        <button class="btn btn-secondary w-100">Save Code</button>
+      </form>
+      <form method="post" action="/projects/{{ project.id }}/upload-exe-web" enctype="multipart/form-data" class="mt-3">
+        <input type="file" name="file" class="form-control mb-2" required>
+        <button class="btn btn-secondary w-100">Upload EXE</button>
+      </form>
+    </div>
+  </div>
 </div>
 <div id="fuzz-pane" class="pane">
-  <form method="post" action="/projects/{{ project.id }}/fuzz-web">
-    <button class="btn btn-warning">Run Fuzzing</button>
+  <form method="post" action="/projects/{{ project.id }}/fuzz-web" class="mb-3">
+    {% for v in all_targets %}
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" name="targets" value="{{ v }}" {% if v in targets %}checked{% endif %}>
+      <label class="form-check-label">{{ v }}</label>
+    </div>
+    {% endfor %}
+    <button class="btn btn-warning mt-2">Run Fuzzing</button>
   </form>
-  {% if project.fuzz_stats %}
+  {% if stubbed_code %}
+  <div class="row mb-3">
+    <div class="col-md-6">
+      <h5>Original</h5>
+      <pre class="code-block">{{ original_code }}</pre>
+    </div>
+    <div class="col-md-6">
+      <h5>Stubbed</h5>
+      <pre class="code-block">{{ stubbed_code }}</pre>
+    </div>
+  </div>
+  {% endif %}
+  {% if fuzz_stats %}
+
   <table class="table table-sm mt-3">
     <thead>
       <tr><th>Variable</th><th>Iterations</th><th>Errors</th><th>CPU&nbsp;s</th><th>Mem&nbsp;kB</th><th>Duration&nbsp;s</th></tr>
     </thead>
     <tbody>
-    {% for s in project.fuzz_stats %}
+    {% for s in fuzz_stats %}
+
       <tr>
         <td>{{ s.variable }}</td>
         <td>{{ s.iterations }}</td>
@@ -54,16 +77,21 @@
   {% endif %}
 </div>
 <div id="analysis-pane" class="pane">
-  <form method="post" action="/projects/{{ project.id }}/analyze-web">
-    <button class="btn btn-danger">Analyze</button>
-  </form>
-  {% if project.analyses %}
-  <ul class="list-group mt-3">
-    {% for a in project.analyses %}
-    <li class="list-group-item"><pre class="mb-0">{{ a.result }}</pre></li>
-    {% endfor %}
-  </ul>
-  {% endif %}
+  <div class="row">
+    <div class="col-md-6">
+      <pre class="code-block">{{ original_code }}</pre>
+    </div>
+    <div class="col-md-6">
+      <form method="post" action="/projects/{{ project.id }}/analyze-web">
+        <textarea name="notes" class="form-control mb-2" rows="10" placeholder="Comments or focus areas"></textarea>
+        <button class="btn btn-danger w-100">Analyze</button>
+      </form>
+      {% if analysis_result %}
+      <div class="analysis-result mt-3"><pre>{{ analysis_result }}</pre></div>
+      {% endif %}
+    </div>
+  </div>
+
 </div>
 <div id="report-pane" class="pane">
   <a href="/projects/{{ project.id }}/report-web" class="btn btn-info">Generate Report</a>
@@ -82,10 +110,18 @@
   });
   require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.41.0/min/vs' }});
   require(['vs/editor/editor.main'], function() {
+    const data = {{ {f.filename: f.content for f in project.files}|tojson }};
     window.editor = monaco.editor.create(document.getElementById('editor'), {
-      value: {{ project.files[0].content|tojson if project.files else '""' }},
+      value: {{ original_code|tojson }},
       language: 'c',
       theme: 'vs-dark'
+    });
+    document.querySelectorAll('.file-item').forEach(li => {
+      li.addEventListener('click', () => {
+        const name = li.dataset.name;
+        window.editor.setValue(data[name]);
+        document.querySelector('input[name="filename"]').value = name;
+      });
     });
   });
   document.getElementById('code-upload-form').addEventListener('submit', function(){

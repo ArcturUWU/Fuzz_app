@@ -3,13 +3,14 @@ body {
   background-color: #1e1e1e;
   color: #d4d4d4;
   font-family: "Segoe UI", Tahoma, sans-serif;
+
 }
 a { color: #569cd6; }
 .topbar {
   background: #333;
   display: flex;
   align-items: center;
-  padding: 4px 8px;
+
 }
 .logo {
   font-weight: bold;
@@ -31,6 +32,20 @@ a { color: #569cd6; }
 #content { padding: 12px; }
 .pane { display: none; padding: 10px; }
 .pane.active { display: block; }
-.editor-container { height: 400px; border: 1px solid #333; }
-.list-group-item { background: #252526; color: #d4d4d4; border-color: #3c3c3c; }
+.editor-container { height: 500px; border: 1px solid #333; }
+.list-group-item { background: #252526; color: #d4d4d4; border-color: #3c3c3c; cursor: pointer; }
 .btn { border-radius: 0; }
+
+.workspace { display: flex; height: 520px; }
+.file-nav { width: 200px; overflow-y: auto; margin-right: 10px; }
+.editor-area { flex: 1; }
+
+.code-block {
+  background: #1e1e1e;
+  border: 1px solid #333;
+  padding: 10px;
+  height: 300px;
+  overflow: auto;
+}
+
+.analysis-result pre { white-space: pre-wrap; }

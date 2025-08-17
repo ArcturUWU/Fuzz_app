@@ -8,5 +8,7 @@ python-multipart
 jinja2
 # system metrics for fuzz stats
 psutil
+# PDF generation for reports
+reportlab
 # Optional for local LLM stub generation
 # vllm
