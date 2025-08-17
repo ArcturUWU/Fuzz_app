@@ -1,4 +1,6 @@
+
 from sqlalchemy import Column, Integer, String, Text, ForeignKey, Float
+
 from sqlalchemy.orm import relationship
 
 from .database import Base
@@ -19,6 +21,7 @@ class Project(Base):
     fuzz_stats = relationship(
         "FuzzStat", back_populates="project", cascade="all, delete-orphan"
     )
+
 
 
 class File(Base):

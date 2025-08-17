@@ -4,6 +4,7 @@ body {
   color: #d4d4d4;
   font-family: "Segoe UI", Tahoma, sans-serif;
   font-size: 16px;
+
 }
 a { color: #569cd6; }
 .topbar {
@@ -12,6 +13,7 @@ a { color: #569cd6; }
   align-items: center;
   padding: 8px 16px;
   font-size: 1.1rem;
+
 }
 .logo {
   font-weight: bold;
@@ -39,6 +41,7 @@ a { color: #569cd6; }
 .file-item .delete-file { visibility: hidden; }
 .file-item:hover .delete-file { visibility: visible; }
 .current-file { font-weight: bold; margin-bottom: 4px; }
+
 .btn { border-radius: 0; }
 
 .workspace { display: flex; height: 520px; }
