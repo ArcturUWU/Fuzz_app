@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+sqlalchemy
+pydantic
+httpx
+pytest
+python-multipart
+jinja2
+# Optional for local LLM stub generation
+# vllm

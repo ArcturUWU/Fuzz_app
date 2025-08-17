@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>{{ project.name }}</h2>
+{% if message %}<div class="alert alert-info">{{ message }}</div>{% endif %}
+<form method="post" action="/projects/{{ project.id }}/upload-code-web" class="mb-3">
+  <input type="text" name="filename" class="form-control mb-2" placeholder="Filename" required>
+  <textarea name="content" rows="5" class="form-control mb-2" placeholder="C-like code"></textarea>
+  <button class="btn btn-secondary">Upload Code</button>
+</form>
+<form method="post" action="/projects/{{ project.id }}/upload-exe-web" enctype="multipart/form-data" class="mb-3">
+  <input type="file" name="file" class="form-control mb-2" required>
+  <button class="btn btn-secondary">Upload EXE</button>
+</form>
+<form method="post" action="/projects/{{ project.id }}/fuzz-web" class="d-inline">
+  <button class="btn btn-warning">Run Fuzzing</button>
+</form>
+<form method="post" action="/projects/{{ project.id }}/analyze-web" class="d-inline ms-2">
+  <button class="btn btn-danger">Analyze</button>
+</form>
+<a href="/projects/{{ project.id }}/report-web" class="btn btn-info ms-2">Report</a>
+{% endblock %}
