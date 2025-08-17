@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Report for {{ project.name }}</h2>
+<h3>Files</h3>
+<ul class="list-group mb-3">
+  {% for f in project.files %}
+  <li class="list-group-item">{{ f.filename }}</li>
+  {% else %}
+  <li class="list-group-item">No files uploaded</li>
+  {% endfor %}
+</ul>
+<h3>Analyses</h3>
+<ul class="list-group">
+  {% for a in project.analyses %}
+  <li class="list-group-item"><pre class="mb-0">{{ a.result }}</pre></li>
+  {% else %}
+  <li class="list-group-item">No analyses</li>
+  {% endfor %}
+</ul>
+<a href="/projects/{{ project.id }}" class="btn btn-secondary mt-3">Back</a>
+{% endblock %}
