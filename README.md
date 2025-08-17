@@ -14,6 +14,7 @@ and tabbed workflow for each project.
 - Simple fuzzing with per-variable statistics (errors, CPU time and
   memory usage)
 - Vulnerability analysis placeholder
+
 - SQLite storage and project reports rendered in the browser
 
 ## Running

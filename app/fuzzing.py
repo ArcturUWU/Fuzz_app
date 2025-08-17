@@ -1,3 +1,4 @@
+
 """Utility helpers for the fuzzing pipeline.
 
 The functions in this module deliberately keep the heavy lifting very
@@ -111,8 +112,8 @@ def fuzz_targets(code: str, targets: List[str], iterations: int = 100) -> List[D
     return [fuzz_variable(code, t, iterations) for t in targets]
 
 
+
 def analyze_code(code: str) -> str:
     """Placeholder security analysis returning a constant string."""
-
     return "No vulnerabilities found"
 

@@ -17,6 +17,7 @@
     {% endfor %}
   </ul>
   {% endif %}
+
   <form id="code-upload-form" method="post" action="/projects/{{ project.id }}/upload-code-web">
     <input type="text" name="filename" class="form-control mb-2" placeholder="Filename" required>
     <input type="hidden" name="content" id="code-content">
