@@ -322,4 +322,3 @@ def report_pdf(project_id: int, db: Session = Depends(get_db)):
             "Content-Disposition": f"attachment; filename=report_{project_id}.pdf"
         },
     )
-

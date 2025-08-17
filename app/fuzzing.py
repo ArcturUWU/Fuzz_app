@@ -142,5 +142,6 @@ def analyze_code(code: str, notes: str = "") -> str:
             return result
     except Exception:  # pragma: no cover - network/model failure
         pass
+
     return "No vulnerabilities found"
 

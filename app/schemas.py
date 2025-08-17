@@ -61,4 +61,3 @@ class FuzzStat(FuzzStatBase):
 
 # forward references
 Project.model_rebuild()
-

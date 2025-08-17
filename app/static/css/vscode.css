@@ -3,6 +3,7 @@ body {
   background-color: #1e1e1e;
   color: #d4d4d4;
   font-family: "Segoe UI", Tahoma, sans-serif;
+  font-size: 16px;
 
 }
 a { color: #569cd6; }
@@ -10,6 +11,8 @@ a { color: #569cd6; }
   background: #333;
   display: flex;
   align-items: center;
+  padding: 8px 16px;
+  font-size: 1.1rem;
 
 }
 .logo {
@@ -34,6 +37,7 @@ a { color: #569cd6; }
 .pane.active { display: block; }
 .editor-container { height: 500px; border: 1px solid #333; }
 .list-group-item { background: #252526; color: #d4d4d4; border-color: #3c3c3c; cursor: pointer; }
+
 .btn { border-radius: 0; }
 
 .workspace { display: flex; height: 520px; }

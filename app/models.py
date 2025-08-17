@@ -37,6 +37,7 @@ class Analysis(Base):
 
     project = relationship("Project", back_populates="analyses")
 
+
 class FuzzStat(Base):
     __tablename__ = "fuzzstats"
 

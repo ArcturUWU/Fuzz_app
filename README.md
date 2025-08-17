@@ -18,7 +18,6 @@ and tabbed workflow for each project.
 - SQLite storage and project reports rendered in the browser with a PDF
   export option
 
-
 ## Running
 
 ```bash
