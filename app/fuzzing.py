@@ -1,3 +1,4 @@
+
 """Utility helpers for the fuzzing pipeline."""
 
 from typing import List
@@ -35,4 +36,3 @@ def fuzz_variable(code: str, variable: str) -> str:
 
 def analyze_code(code: str) -> str:
     """Placeholder security analysis returning a constant string."""
-    return "No vulnerabilities found"

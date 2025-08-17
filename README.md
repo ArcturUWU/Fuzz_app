@@ -9,6 +9,7 @@ and tabbed workflow for each project.
 
 - Create and browse multiple projects via the web interface
 - VSCode-style editor pane with EXE or source upload for each project
+
 - Naive decompilation, target variable selection and stub generation
   via an LLM powered by [vLLM](https://github.com/vllm-project/vllm)
 - Simple fuzzing and vulnerability analysis placeholders
