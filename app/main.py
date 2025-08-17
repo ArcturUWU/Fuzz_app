@@ -250,13 +250,14 @@ def save_file_web(
     project_id: int,
     filename: str = Form(...),
     content: str = Form(...),
-    file_id: int | None = Form(None),
+    file_id: str | None = Form(None),
     db: Session = Depends(get_db),
 ):
-    if file_id:
+    fid = int(file_id) if file_id else None
+    if fid is not None:
         db_file = (
             db.query(models.File)
-            .filter(models.File.project_id == project_id, models.File.id == file_id)
+            .filter(models.File.project_id == project_id, models.File.id == fid)
             .first()
         )
         if db_file:
