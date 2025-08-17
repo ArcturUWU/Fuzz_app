@@ -90,8 +90,6 @@ def update_file_api(
     db.commit()
     db.refresh(file)
     return file
-
-
 @app.post("/projects/{project_id}/upload-exe", response_model=schemas.File)
 def upload_exe(project_id: int, file: UploadFile = File(...), db: Session = Depends(get_db)):
     # Save uploaded file temporarily
@@ -227,7 +225,6 @@ def project_page(
     all_targets = (
         fuzzing.select_target_variables(original_code) if file else []
     )
-
     return templates.TemplateResponse(
         "project.html",
         {

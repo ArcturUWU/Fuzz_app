@@ -60,7 +60,6 @@ def test_deletion():
     projects = client.get("/projects").json()
     assert all(p["id"] != pid for p in projects)
 
-
 def test_get_and_update_file():
     resp = client.post("/projects", json={"name": "editproj"})
     pid = resp.json()["id"]
@@ -93,3 +92,4 @@ def test_save_file_blank_id():
     projects = client.get("/projects").json()
     proj = next(p for p in projects if p["id"] == pid)
     assert any(f["filename"] == "new.c" for f in proj["files"])
+
