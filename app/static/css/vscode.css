@@ -1,0 +1,54 @@
+body {
+  margin: 0;
+  background-color: #1e1e1e;
+  color: #d4d4d4;
+  font-family: "Segoe UI", Tahoma, sans-serif;
+  font-size: 16px;
+}
+a { color: #569cd6; }
+.topbar {
+  background: #333;
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
+  font-size: 1.1rem;
+}
+.logo {
+  font-weight: bold;
+  margin-right: 1rem;
+  color: #fff;
+  text-decoration: none;
+}
+.tabs button {
+  background: none;
+  border: none;
+  color: #ccc;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+.tabs button.active {
+  background: #1e1e1e;
+  color: #fff;
+}
+#content { padding: 12px; }
+.pane { display: none; padding: 10px; }
+.pane.active { display: block; }
+.editor-container { height: 500px; border: 1px solid #333; }
+.list-group-item { background: #252526; color: #d4d4d4; border-color: #3c3c3c; cursor: pointer; }
+.file-item.active { background: #094771; color: #fff; }
+.current-file { font-weight: bold; margin-bottom: 4px; }
+.btn { border-radius: 0; }
+
+.workspace { display: flex; height: 520px; }
+.file-nav { width: 200px; overflow-y: auto; margin-right: 10px; }
+.editor-area { flex: 1; }
+
+.code-block {
+  background: #1e1e1e;
+  border: 1px solid #333;
+  padding: 10px;
+  height: 300px;
+  overflow: auto;
+}
+
+.analysis-result pre { white-space: pre-wrap; }
