@@ -45,9 +45,6 @@ model weights are not available the function falls back to returning a
 static stub so the rest of the application still works.  To enable real
 generation install vLLM and place the desired model weights on disk:
 
-```bash
-pip install vllm
-```
 
 ## Testing
 
