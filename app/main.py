@@ -5,6 +5,8 @@ from fastapi import (
     File,
     Form,
     Request,
+    HTTPException,
+
 )
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
@@ -60,6 +62,35 @@ def delete_file_api(project_id: int, file_id: int, db: Session = Depends(get_db)
     db.commit()
     return {"detail": "deleted"}
 
+
+@app.get("/projects/{project_id}/files/{file_id}", response_model=schemas.File)
+def get_file_api(project_id: int, file_id: int, db: Session = Depends(get_db)):
+    file = (
+        db.query(models.File)
+        .filter(models.File.project_id == project_id, models.File.id == file_id)
+        .first()
+    )
+    if not file:
+        raise HTTPException(status_code=404, detail="File not found")
+    return file
+
+
+@app.put("/projects/{project_id}/files/{file_id}", response_model=schemas.File)
+def update_file_api(
+    project_id: int, file_id: int, snippet: schemas.FileCreate, db: Session = Depends(get_db)
+):
+    file = (
+        db.query(models.File)
+        .filter(models.File.project_id == project_id, models.File.id == file_id)
+        .first()
+    )
+    if not file:
+        raise HTTPException(status_code=404, detail="File not found")
+    file.filename = snippet.filename
+    file.content = snippet.content
+    db.commit()
+    db.refresh(file)
+    return file
 
 @app.post("/projects/{project_id}/upload-exe", response_model=schemas.File)
 def upload_exe(project_id: int, file: UploadFile = File(...), db: Session = Depends(get_db)):
@@ -197,7 +228,6 @@ def project_page(
     all_targets = (
         fuzzing.select_target_variables(original_code) if file else []
     )
-    file_map = {f.filename: f.content for f in project.files}
 
 
     return templates.TemplateResponse(
@@ -212,21 +242,34 @@ def project_page(
             "stubbed_code": stubbed,
             "fuzz_stats": stats or project.fuzz_stats,
             "analysis_result": analysis_result,
-            "file_map": file_map,
             "active_pane": active,
         },
     )
 
 
-@app.post("/projects/{project_id}/upload-code-web")
-def upload_code_web(
+@app.post("/projects/{project_id}/save-file")
+def save_file_web(
     project_id: int,
     filename: str = Form(...),
     content: str = Form(...),
+    file_id: int | None = Form(None),
     db: Session = Depends(get_db),
 ):
-    db_file = models.File(filename=filename, content=content, project_id=project_id)
-    db.add(db_file)
+    if file_id:
+        db_file = (
+            db.query(models.File)
+            .filter(models.File.project_id == project_id, models.File.id == file_id)
+            .first()
+        )
+        if db_file:
+            db_file.filename = filename
+            db_file.content = content
+    else:
+        db_file = models.File(
+            filename=filename, content=content, project_id=project_id
+        )
+        db.add(db_file)
+
     db.commit()
     return RedirectResponse(url=f"/projects/{project_id}", status_code=303)
 
@@ -274,7 +317,6 @@ def fuzz_web(
     else:
         message = "Stubs generated"
 
-
     return templates.TemplateResponse(
         "project.html",
         {
@@ -288,7 +330,6 @@ def fuzz_web(
             "stubbed_code": stubbed,
             "fuzz_stats": stats,
             "active_pane": "fuzz-pane",
-            "file_map": {f.filename: f.content for f in project.files},
         },
 
     )
@@ -325,9 +366,7 @@ def analyze_web(
             "fuzz_stats": project.fuzz_stats,
             "analysis_result": result,
             "active_pane": "analysis-pane",
-            "file_map": {f.filename: f.content for f in project.files},
         },
-
     )
 
 

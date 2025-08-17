@@ -59,3 +59,22 @@ def test_deletion():
     assert del_proj.status_code == 200
     projects = client.get("/projects").json()
     assert all(p["id"] != pid for p in projects)
+
+def test_get_and_update_file():
+    resp = client.post("/projects", json={"name": "editproj"})
+    pid = resp.json()["id"]
+    file_resp = client.post(
+        f"/projects/{pid}/upload-code",
+        json={"filename": "a.c", "content": "int x=0;"},
+    ).json()
+    fid = file_resp["id"]
+    fetched = client.get(f"/projects/{pid}/files/{fid}").json()
+    assert fetched["filename"] == "a.c"
+    updated = client.put(
+        f"/projects/{pid}/files/{fid}",
+        json={"filename": "b.c", "content": "int y=1;"},
+    ).json()
+    assert updated["filename"] == "b.c"
+    fetched2 = client.get(f"/projects/{pid}/files/{fid}").json()
+    assert fetched2["filename"] == "b.c"
+    assert "int y=1;" in fetched2["content"]
