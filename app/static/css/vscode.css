@@ -1,0 +1,117 @@
+:root {
+  --bg: #1e1e1e;
+  --panel: #252526;
+  --accent: #0e639c;
+  --text: #d4d4d4;
+}
+body {
+  margin: 0;
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: "Segoe UI", Tahoma, sans-serif;
+  font-size: 17px;
+}
+a {
+  color: #569cd6;
+}
+.topbar {
+  background: #333;
+  display: flex;
+  align-items: center;
+  padding: 10px 20px;
+  font-size: 1.1rem;
+}
+.logo {
+  font-weight: bold;
+  margin-right: 1rem;
+  color: #fff;
+  text-decoration: none;
+}
+.tabs button {
+  background: none;
+  border: none;
+  color: #ccc;
+  padding: 8px 16px;
+  margin-right: 4px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.tabs button.active {
+  background: var(--panel);
+  color: #fff;
+}
+#content {
+  padding: 12px;
+}
+.pane {
+  display: none;
+  padding: 10px;
+}
+.pane.active {
+  display: block;
+}
+.editor-container {
+  border: 1px solid #333;
+  border-radius: 4px;
+  height: 100%;
+}
+.list-group-item {
+  background: var(--panel);
+  color: var(--text);
+  border: none;
+  cursor: pointer;
+  padding: 8px 10px;
+  margin-bottom: 2px;
+}
+.file-item.active {
+  background: #094771;
+  color: #fff;
+}
+.file-item .delete-file {
+  visibility: hidden;
+}
+.file-item:hover .delete-file {
+  visibility: visible;
+}
+.current-file {
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+.btn {
+  border-radius: 4px;
+}
+.workspace {
+  display: flex;
+  height: 650px;
+}
+.file-nav {
+  width: 240px;
+  overflow-y: auto;
+  margin-right: 12px;
+  background: var(--panel);
+  border-right: 1px solid #3c3c3c;
+}
+.editor-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.editor-toolbar {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.filename-input {
+  max-width: 250px;
+}
+.code-block {
+  background: #1e1e1e;
+  border: 1px solid #333;
+  padding: 10px;
+  height: 300px;
+  overflow: auto;
+}
+
+.analysis-result pre {
+  white-space: pre-wrap;
+}

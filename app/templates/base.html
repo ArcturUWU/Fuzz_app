@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>FuzzApp</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="{{ url_for('static', path='css/vscode.css') }}" rel="stylesheet">
+</head>
+<body>
+  <div class="topbar">
+    <a class="logo" href="/">FuzzApp</a>
+    {% block topnav %}{% endblock %}
+  </div>
+  <div id="content">
+    {% block content %}{% endblock %}
+  </div>
+</body>
+</html>

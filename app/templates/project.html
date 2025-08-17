@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+{% block topnav %}
+<div class="tabs">
+  <button type="button" class="tab-link active" data-pane="editor-pane">Editor</button>
+  <button type="button" class="tab-link" data-pane="fuzz-pane">Fuzz</button>
+  <button type="button" class="tab-link" data-pane="analysis-pane">Analysis</button>
+  <button type="button" class="tab-link" data-pane="report-pane">Report</button>
+</div>
+{% endblock %}
+{% block content %}
+{% if message %}<div class="alert alert-info">{{ message }}</div>{% endif %}
+<div id="editor-pane" class="pane active">
+  <div class="workspace">
+    <div class="file-nav">
+      <ul class="list-group">
+        {% for f in project.files %}
+        <li class="list-group-item d-flex justify-content-between align-items-center file-item" data-name="{{ f.filename }}" data-id="{{ f.id }}">
+          <span class="file-name flex-grow-1">{{ f.filename }}</span>
+          <form method="post" action="/projects/{{ project.id }}/files/{{ f.id }}/delete" class="ms-2">
+            <button type="submit" class="btn btn-sm btn-link text-danger p-0 delete-file">&times;</button>
+          </form>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="editor-area">
+      <div id="current-file" class="current-file mb-1"></div>
+      <form id="file-form" method="post" action="/projects/{{ project.id }}/save-file">
+        <input type="hidden" name="file_id" id="file-id">
+        <div class="editor-toolbar mb-2">
+          <input type="text" name="filename" class="form-control filename-input" placeholder="Filename" required>
+          <button class="btn btn-primary">Save</button>
+        </div>
+        <input type="hidden" name="content" id="code-content">
+        <div id="editor" class="editor-container mb-2"></div>
+      </form>
+      <form method="post" action="/projects/{{ project.id }}/upload-exe-web" enctype="multipart/form-data" class="d-flex gap-2 align-items-center mt-3">
+        <input type="file" name="file" class="form-control" required>
+        <button class="btn btn-secondary">Upload EXE</button>
+      </form>
+    </div>
+  </div>
+</div>
+<div id="fuzz-pane" class="pane">
+  <form method="post" action="/projects/{{ project.id }}/fuzz-web" class="mb-3">
+    {% for v in all_targets %}
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" name="targets" value="{{ v }}" {% if v in targets %}checked{% endif %}>
+      <label class="form-check-label">{{ v }}</label>
+    </div>
+    {% endfor %}
+    <button class="btn btn-secondary mt-2 me-2" name="preview" value="true">Preview Stubs</button>
+    <button class="btn btn-warning mt-2">Run Fuzzing</button>
+  </form>
+  {% if stubbed_code %}
+  <div class="row mb-3">
+    <div class="col-md-6">
+      <h5>Original</h5>
+      <pre class="code-block" id="fuzz-original">{{ original_code }}</pre>
+    </div>
+    <div class="col-md-6">
+      <h5>Stubbed</h5>
+      <pre class="code-block">{{ stubbed_code }}</pre>
+    </div>
+  </div>
+  {% endif %}
+  {% if fuzz_stats %}
+  <table class="table table-sm mt-3">
+    <thead>
+      <tr><th>Variable</th><th>Iterations</th><th>Errors</th><th>CPU&nbsp;s</th><th>Mem&nbsp;kB</th><th>Duration&nbsp;s</th></tr>
+    </thead>
+    <tbody>
+    {% for s in fuzz_stats %}
+      <tr>
+        <td>{{ s.variable }}</td>
+        <td>{{ s.iterations }}</td>
+        <td>{{ s.errors }}</td>
+        <td>{{ '%.2f'|format(s.cpu_time) }}</td>
+        <td>{{ '%.1f'|format(s.memory_kb) }}</td>
+        <td>{{ '%.2f'|format(s.duration) }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+</div>
+<div id="analysis-pane" class="pane">
+  <div class="row">
+    <div class="col-md-6">
+      <pre class="code-block" id="analysis-original">{{ original_code }}</pre>
+    </div>
+    <div class="col-md-6">
+      <form method="post" action="/projects/{{ project.id }}/analyze-web">
+        <textarea name="notes" class="form-control mb-2" rows="10" placeholder="Comments or focus areas"></textarea>
+        <button class="btn btn-danger">Analyze</button>
+      </form>
+      {% if analysis_result %}
+      <div class="analysis-result mt-3"><pre>{{ analysis_result }}</pre></div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+<div id="report-pane" class="pane">
+  <a href="/projects/{{ project.id }}/report-web" class="btn btn-info">Generate Report</a>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.41.0/min/vs/loader.min.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const tabs = document.querySelectorAll('.tab-link');
+    const panes = document.querySelectorAll('.pane');
+    const activePane = JSON.parse('{{ active_pane|tojson }}');
+    tabs.forEach((t) => {
+      t.addEventListener('click', (e) => {
+        e.preventDefault();
+        tabs.forEach((b) => b.classList.remove('active'));
+        panes.forEach((p) => p.classList.remove('active'));
+        t.classList.add('active');
+        document.getElementById(t.dataset.pane).classList.add('active');
+      });
+    });
+    tabs.forEach((t) => {
+      t.classList.toggle('active', t.dataset.pane === activePane);
+    });
+    panes.forEach((p) => {
+      p.classList.toggle('active', p.id === activePane);
+    });
+
+    require.config({
+      paths: {
+        vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.41.0/min/vs',
+      },
+    });
+    require(['vs/editor/editor.main'], function () {
+      window.editor = monaco.editor.create(document.getElementById('editor'), {
+        value: JSON.parse('{{ original_code|tojson }}'),
+        language: 'c',
+        theme: 'vs-dark',
+      });
+      const fileItems = document.querySelectorAll('.file-item');
+      const filenameInput = document.querySelector('input[name="filename"]');
+      const fileIdInput = document.getElementById('file-id');
+      const currentFile = document.getElementById('current-file');
+      const fuzzOriginal = document.getElementById('fuzz-original');
+      const analysisOriginal = document.getElementById('analysis-original');
+
+      async function loadFile(li) {
+        fileItems.forEach((item) => item.classList.remove('active'));
+        li.classList.add('active');
+        const id = li.dataset.id;
+        const resp = await fetch(`/projects/{{ project.id }}/files/${id}`);
+        if (!resp.ok) return;
+        const file = await resp.json();
+        window.editor.setValue(file.content);
+        filenameInput.value = file.filename;
+        fileIdInput.value = id;
+        currentFile.textContent = file.filename;
+        if (fuzzOriginal) fuzzOriginal.textContent = file.content;
+        if (analysisOriginal) analysisOriginal.textContent = file.content;
+      }
+
+      if (fileItems.length) {
+        loadFile(fileItems[fileItems.length - 1]);
+      }
+      fileItems.forEach((li) => {
+        li.addEventListener('click', (e) => {
+          if (e.target.closest('form')) return;
+          loadFile(li);
+        });
+      });
+    });
+
+    document.getElementById('file-form').addEventListener('submit', function () {
+      document.getElementById('code-content').value = window.editor.getValue();
+    });
+  });
+</script>
+{% endblock %}
